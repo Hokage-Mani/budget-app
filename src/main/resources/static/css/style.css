@@ -1,0 +1,234 @@
+:root {
+  --bg: #0F1419;
+  --surface: #171D26;
+  --surface-raised: #1D242F;
+  --border: #2A3340;
+  --text: #E8E6E1;
+  --text-muted: #8B93A1;
+  --gold: #D9B45C;
+  --positive: #4FBE8E;
+  --negative: #E1685C;
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.hidden { display: none !important; }
+
+/* Tabular numerals everywhere money appears — the signature detail: every dollar
+   amount lines up like columns in a real ledger book. */
+.hero-amount, .stripe-amount, .rec-amount, .cal-amount, input[type="number"] {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.ledger-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.5rem;
+  color: var(--gold);
+  margin: 0;
+}
+
+/* ---------- Auth ---------- */
+.auth-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.auth-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2.5rem;
+  width: 340px;
+}
+.auth-sub { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
+#auth-form { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem; }
+#auth-form input {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.65rem 0.75rem;
+  border-radius: 4px;
+  font-family: var(--font-body);
+}
+.auth-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+.auth-error { color: var(--negative); font-size: 0.85rem; min-height: 1.2em; }
+
+/* ---------- Buttons ---------- */
+.btn-primary, .btn-secondary, .btn-text {
+  font-family: var(--font-body);
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+.btn-primary {
+  background: var(--gold);
+  color: #1A1408;
+  padding: 0.6rem 1.1rem;
+  border: none;
+}
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+  padding: 0.6rem 1.1rem;
+}
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--gold);
+  padding: 0.3rem 0;
+  font-size: 0.9rem;
+}
+
+/* ---------- App shell ---------- */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid var(--border);
+}
+.topbar-right { display: flex; align-items: center; gap: 1rem; color: var(--text-muted); font-size: 0.9rem; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot-on { background: var(--positive); }
+.dot-off { background: var(--negative); }
+
+.hero {
+  display: flex;
+  align-items: flex-end;
+  gap: 3rem;
+  padding: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+.hero-figure { display: flex; flex-direction: column; gap: 0.25rem; }
+.hero-label { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.hero-amount { font-size: 2.5rem; color: var(--positive); }
+.hero-amount-debt { color: var(--negative); font-size: 2rem; }
+.hero-btn { margin-left: auto; }
+
+/* ---------- Grid ---------- */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.25rem;
+  padding: 1.5rem 2rem 3rem;
+}
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.25rem 1.5rem;
+}
+.panel-wide { grid-column: 1 / -1; }
+.panel h2 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  margin: 0 0 0.25rem;
+  font-weight: 600;
+}
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; }
+.panel-head h2 { margin: 0; }
+.panel-sub, .panel-hint { color: var(--text-muted); font-size: 0.8rem; font-weight: 400; }
+.panel-hint { margin: 0 0 0.75rem; }
+
+/* ---------- Striped lists (accounts / debts) — the left border color IS the data ---------- */
+.stripe-list { list-style: none; margin: 0.75rem 0 0; padding: 0; }
+.stripe-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.6rem 0.75rem;
+  border-left: 3px solid var(--border);
+  background: var(--surface-raised);
+  border-radius: 3px;
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+}
+.stripe-list li.positive { border-left-color: var(--positive); }
+.stripe-list li.negative { border-left-color: var(--negative); }
+.stripe-list-muted li { opacity: 0.55; }
+.stripe-amount { font-weight: 500; }
+.stripe-name { color: var(--text-muted); }
+
+.paid-off-heading { font-size: 0.85rem; color: var(--text-muted); margin-top: 1.25rem; font-weight: 500; }
+
+/* ---------- Recommendations ---------- */
+.rec-list { list-style: none; margin: 0; padding: 0; }
+.rec-list li {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+.rec-list li:last-child { border-bottom: none; }
+.rec-top { display: flex; justify-content: space-between; }
+.rec-amount { color: var(--gold); font-weight: 500; }
+.rec-note { color: var(--text-muted); font-size: 0.78rem; margin-top: 0.15rem; }
+
+/* ---------- Calendar ---------- */
+.calendar-nav { display: flex; gap: 1rem; margin: 0.5rem 0 0.75rem; }
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.cal-cell {
+  min-height: 64px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.cal-cell.empty { background: transparent; border-color: transparent; }
+.cal-day-num { font-family: var(--font-mono); }
+.cal-amount { display: block; margin-top: 0.2rem; font-size: 0.72rem; }
+.cal-amount.positive { color: var(--positive); }
+.cal-amount.negative { color: var(--negative); }
+.cal-due { display: block; margin-top: 0.15rem; color: var(--gold); font-size: 0.68rem; }
+
+/* ---------- Modals ---------- */
+.modal {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.75rem;
+  width: 380px;
+}
+.modal::backdrop { background: rgba(0,0,0,0.6); }
+.modal h2 { font-family: var(--font-display); margin-top: 0; }
+.modal label { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.85rem; margin-bottom: 0.9rem; }
+.modal .hint { color: var(--text-muted); font-weight: 400; }
+.modal input, .modal select {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.55rem 0.65rem;
+  border-radius: 4px;
+  font-family: var(--font-body);
+}
+.modal-actions { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 0.5rem; }
+.modal-error { color: var(--negative); font-size: 0.82rem; min-height: 1.1em; margin: 0.25rem 0 0; }
+
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr; }
+  .hero { flex-wrap: wrap; gap: 1.5rem; }
+  .hero-btn { margin-left: 0; }
+}

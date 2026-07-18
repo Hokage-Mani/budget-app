@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ledger — Live Budget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div id="auth-screen" class="auth-screen">
+  <div class="auth-card">
+    <h1 class="ledger-title">Ledger</h1>
+    <p class="auth-sub">A live-updating budget, kept like a real ledger.</p>
+    <form id="auth-form">
+      <input type="email" id="auth-email" placeholder="Email" required>
+      <input type="password" id="auth-password" placeholder="Password" required>
+      <input type="text" id="auth-name" placeholder="Display name (register only)">
+      <div class="auth-actions">
+        <button type="submit" data-mode="login" class="btn-primary">Log in</button>
+        <button type="submit" data-mode="register" class="btn-secondary">Register</button>
+      </div>
+      <p id="auth-error" class="auth-error"></p>
+    </form>
+  </div>
+</div>
+
+<div id="app" class="app hidden">
+  <header class="topbar">
+    <h1 class="ledger-title">Ledger</h1>
+    <div class="topbar-right">
+      <span id="connection-dot" class="dot dot-off" title="Live connection status"></span>
+      <span id="user-name"></span>
+      <button id="logout-btn" class="btn-text">Log out</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-figure">
+      <span class="hero-label">Total balance</span>
+      <span id="total-balance" class="hero-amount">$0.00</span>
+    </div>
+    <div class="hero-figure hero-figure-debt">
+      <span class="hero-label">Total active debt</span>
+      <span id="total-debt" class="hero-amount hero-amount-debt">$0.00</span>
+    </div>
+    <button id="add-transaction-btn" class="btn-primary hero-btn">+ Record transaction</button>
+  </section>
+
+  <main class="grid">
+
+    <section class="panel" id="accounts-panel">
+      <div class="panel-head">
+        <h2>Accounts</h2>
+        <button id="add-account-btn" class="btn-text">+ Add account</button>
+      </div>
+      <ul id="account-list" class="stripe-list"></ul>
+    </section>
+
+    <section class="panel" id="chart-panel">
+      <h2>Progress &amp; impact <span class="panel-sub">last 90 days</span></h2>
+      <canvas id="flow-chart" height="140"></canvas>
+    </section>
+
+    <section class="panel" id="debts-panel">
+      <div class="panel-head">
+        <h2>Active debts</h2>
+        <button id="add-debt-btn" class="btn-text">+ Add debt</button>
+      </div>
+      <ul id="debt-list" class="stripe-list"></ul>
+      <h3 class="paid-off-heading">Paid off</h3>
+      <ul id="paid-off-list" class="stripe-list stripe-list-muted"></ul>
+    </section>
+
+    <section class="panel" id="recommendations-panel">
+      <h2>Recommended allocation</h2>
+      <p class="panel-hint">Based on your savings goal's monthly amount</p>
+      <ul id="recommendation-list" class="rec-list"></ul>
+      <button id="edit-goal-btn" class="btn-text">Edit savings goal →</button>
+    </section>
+
+    <section class="panel panel-wide" id="calendar-panel">
+      <h2 id="calendar-title">Calendar</h2>
+      <div class="calendar-nav">
+        <button id="cal-prev" class="btn-text">‹ Prev</button>
+        <button id="cal-next" class="btn-text">Next ›</button>
+      </div>
+      <div id="calendar-grid" class="calendar-grid"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Add transaction modal -->
+<dialog id="tx-modal" class="modal">
+  <form id="tx-form" method="dialog">
+    <h2>Record a transaction</h2>
+    <label>Account
+      <select id="tx-account" required></select>
+    </label>
+    <label>Description
+      <input type="text" id="tx-description" required>
+    </label>
+    <label>Amount <span class="hint">(negative = expense/payment, positive = income)</span>
+      <input type="number" step="0.01" id="tx-amount" required>
+    </label>
+    <label>Category
+      <select id="tx-category">
+        <option value="INCOME">Income</option>
+        <option value="DEBT_PAYMENT">Debt payment</option>
+        <option value="BILL">Bill</option>
+        <option value="GROCERIES">Groceries</option>
+        <option value="SAVINGS_TRANSFER">Savings transfer</option>
+        <option value="OTHER">Other</option>
+      </select>
+    </label>
+    <label id="tx-debt-wrap" class="hidden">Linked debt
+      <select id="tx-debt"></select>
+    </label>
+    <label>Date
+      <input type="date" id="tx-date" required>
+    </label>
+    <p id="tx-error" class="modal-error"></p>
+    <div class="modal-actions">
+      <button type="button" id="tx-cancel" class="btn-secondary">Cancel</button>
+      <button type="submit" class="btn-primary">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Savings goal modal -->
+<dialog id="goal-modal" class="modal">
+  <form id="goal-form" method="dialog">
+    <h2>Savings goal</h2>
+    <label>Goal name
+      <input type="text" id="goal-name" required>
+    </label>
+    <label>Target amount
+      <input type="number" step="0.01" id="goal-target" required>
+    </label>
+    <label>Target date
+      <input type="date" id="goal-date">
+    </label>
+    <label>Monthly amount available (minimums + extra)
+      <input type="number" step="0.01" id="goal-allocation" required>
+    </label>
+    <label>Strategy
+      <select id="goal-strategy">
+        <option value="AVALANCHE">Avalanche — highest interest first (least total interest)</option>
+        <option value="SNOWBALL">Snowball — smallest balance first (fastest wins)</option>
+        <option value="GOAL_WEIGHTED">Weighted — split across all debts by interest cost</option>
+      </select>
+    </label>
+    <p id="goal-error" class="modal-error"></p>
+    <div class="modal-actions">
+      <button type="button" id="goal-cancel" class="btn-secondary">Cancel</button>
+      <button type="submit" class="btn-primary">Save goal</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Add account modal -->
+<dialog id="account-modal" class="modal">
+  <form id="account-form" method="dialog">
+    <h2>Add an account</h2>
+    <label>Name
+      <input type="text" id="account-name" placeholder="Checking, Cash, Emergency Fund..." required>
+    </label>
+    <label>Type
+      <select id="account-type">
+        <option value="CHECKING">Checking</option>
+        <option value="SAVINGS">Savings</option>
+        <option value="CASH">Cash</option>
+        <option value="CREDIT">Credit</option>
+      </select>
+    </label>
+    <label>Opening balance
+      <input type="number" step="0.01" id="account-balance" value="0" required>
+    </label>
+    <p id="account-error" class="modal-error"></p>
+    <div class="modal-actions">
+      <button type="button" id="account-cancel" class="btn-secondary">Cancel</button>
+      <button type="submit" class="btn-primary">Add account</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Add debt modal -->
+<dialog id="debt-modal" class="modal">
+  <form id="debt-form" method="dialog">
+    <h2>Add a debt</h2>
+    <label>Name
+      <input type="text" id="debt-name" placeholder="Visa Card, Car Loan..." required>
+    </label>
+    <label>Current balance
+      <input type="number" step="0.01" id="debt-balance" required>
+    </label>
+    <label>Interest rate (APR %)
+      <input type="number" step="0.01" id="debt-apr" required>
+    </label>
+    <label>Minimum payment
+      <input type="number" step="0.01" id="debt-min-payment" required>
+    </label>
+    <label>Due date
+      <input type="date" id="debt-due-date">
+    </label>
+    <p id="debt-error" class="modal-error"></p>
+    <div class="modal-actions">
+      <button type="button" id="debt-cancel" class="btn-secondary">Cancel</button>
+      <button type="submit" class="btn-primary">Add debt</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
