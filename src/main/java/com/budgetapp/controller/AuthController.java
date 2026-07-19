@@ -1,6 +1,7 @@
 package com.budgetapp.controller;
 
 import com.budgetapp.dto.AuthDtos.*;
+import com.budgetapp.exception.UserAlreadyExistsException;
 import com.budgetapp.model.User;
 import com.budgetapp.repository.UserRepository;
 import com.budgetapp.security.JwtUtil;
@@ -24,9 +25,12 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
+
+        // 1. Throw the custom exception if the email exists
         if (userRepository.existsByEmail(req.email())) {
-            return ResponseEntity.badRequest().body("Email already registered");
+            throw new UserAlreadyExistsException("An account with this email already exists.");
         }
+
         User user = new User();
         user.setEmail(req.email());
         user.setPasswordHash(passwordEncoder.encode(req.password()));
